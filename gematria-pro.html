@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gematria Pro</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gematria">
+<meta name="msapplication-TileColor" content="#08060f">
+<meta name="theme-color" content="#08060f">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#08060f;
+  --bg2:#0e0b1a;
+  --bg3:#140f22;
+  --card:#1a142b;
+  --card2:#211a36;
+  --border:#2e2450;
+  --border2:#3d3168;
+  --p1:#a78bfa;--p2:#7c3aed;--p3:#5b21b6;
+  --t1:#2dd4bf;--t2:#0d9488;
+  --y1:#fbbf24;--y2:#f59e0b;
+  --r1:#f87171;--r2:#ef4444;
+  --g1:#4ade80;--g2:#16a34a;
+  --o1:#fb923c;--o2:#ea580c;
+  --pink:#f472b6;
+  --txt:#e2d9f3;
+  --txt2:#a394c4;
+  --txt3:#6b5c8f;
+  --white:#f8f5ff;
+  --glow-p:rgba(167,139,250,0.2);
+  --glow-t:rgba(45,212,191,0.2);
+}
+html,body{height:100%;width:100%;overflow-x:hidden;background:var(--bg);}
+body{font-family:'Syne',sans-serif;color:var(--txt);min-height:100vh;position:relative;}
+
+/* ── AMBIENT BG ── */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.18;animation:drift 12s ease-in-out infinite alternate;}
+.orb1{width:400px;height:400px;background:var(--p2);top:-100px;left:-100px;animation-duration:14s;}
+.orb2{width:300px;height:300px;background:var(--t2);bottom:-80px;right:-80px;animation-duration:11s;animation-delay:-5s;}
+.orb3{width:200px;height:200px;background:#6d28d9;top:40%;left:60%;animation-duration:16s;animation-delay:-3s;}
+@keyframes drift{from{transform:translate(0,0) scale(1);}to{transform:translate(30px,20px) scale(1.1);}}
+
+/* Stars */
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) ease-in-out infinite alternate;}
+@keyframes twinkle{from{opacity:0.1;}to{opacity:0.7;}}
+
+/* ── LAYOUT ── */
+.app{position:relative;z-index:2;max-width:480px;width:100%;margin:0 auto;padding:0 16px 60px;min-height:100vh;}
+
+/* ── HEADER ── */
+.hdr{padding:28px 0 8px;text-align:center;position:relative;}
+.hdr-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;}
+.hdr-icon{width:40px;height:40px;position:relative;}
+.hdr-icon svg{width:100%;height:100%;filter:drop-shadow(0 0 8px rgba(167,139,250,0.7));}
+.hdr-title{font-size:26px;font-weight:800;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--p1) 0%,var(--t1) 50%,var(--y1) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hdr-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.25em;color:var(--txt3);text-transform:uppercase;margin-top:2px;}
+.hdr-badge{display:inline-block;background:linear-gradient(135deg,var(--p2),var(--t2));padding:2px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.15em;color:#fff;margin-top:6px;text-transform:uppercase;}
+
+/* ── INPUT ── */
+.input-wrap{margin:16px 0;position:relative;}
+.input-box{width:100%;background:var(--card);border:1.5px solid var(--border2);border-radius:14px;padding:16px 52px 16px 18px;font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:var(--white);outline:none;transition:border-color 0.25s,box-shadow 0.25s;caret-color:var(--p1);}
+.input-box::placeholder{color:var(--txt3);font-weight:400;font-size:16px;}
+.input-box:focus{border-color:var(--p1);box-shadow:0 0 0 3px var(--glow-p),0 4px 20px rgba(0,0,0,0.4);}
+.input-actions{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;gap:4px;}
+.icon-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--txt3);transition:color 0.2s,background 0.2s;font-size:15px;line-height:1;}
+.icon-btn:hover{color:var(--txt);background:var(--card2);}
+.char-count{font-family:'Space Mono',monospace;font-size:9px;color:var(--txt3);text-align:right;margin-top:-10px;margin-bottom:8px;padding-right:4px;}
+
+/* ── TAB NAV ── */
+.tab-nav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
+.tab-nav::-webkit-scrollbar{display:none;}
+.tab-btn{flex-shrink:0;padding:7px 14px;border-radius:30px;border:1.5px solid var(--border);background:transparent;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--txt3);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.tab-btn:hover{border-color:var(--border2);color:var(--txt);}
+.tab-btn.active{border-color:transparent;color:#fff;}
+.tab-btn.active.t-core{background:linear-gradient(135deg,var(--p2),#6d28d9);}
+.tab-btn.active.t-adv{background:linear-gradient(135deg,var(--t2),#0891b2);}
+.tab-btn.active.t-math{background:linear-gradient(135deg,var(--y2),var(--o2));}
+.tab-btn.active.t-kab{background:linear-gradient(135deg,var(--r2),#be123c);}
+.tab-btn.active.t-all{background:linear-gradient(135deg,#7c3aed,var(--t2));}
+
+/* ── HERO RESULT ── */
+.hero{background:var(--card);border:1.5px solid var(--border2);border-radius:18px;padding:24px 20px 20px;margin-bottom:14px;position:relative;overflow:hidden;transition:border-color 0.3s;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 80% at 50% 0%,rgba(124,58,237,0.08) 0%,transparent 60%);pointer-events:none;}
+.hero.active{border-color:var(--p1);}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.hero-cipher{display:flex;flex-direction:column;gap:2px;}
+.hero-cipher-tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.25em;color:var(--txt3);text-transform:uppercase;}
+.hero-cipher-name{font-size:13px;font-weight:700;color:var(--txt2);}
+.hero-actions{display:flex;gap:6px;}
+.copy-btn{display:flex;align-items:center;gap:4px;padding:6px 10px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--txt2);font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;transition:all 0.2s;letter-spacing:0.1em;}
+.copy-btn:hover{background:var(--border);color:var(--white);}
+.copy-btn.copied{background:rgba(74,222,128,0.15);border-color:var(--g1);color:var(--g1);}
+.hero-num-row{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin:12px 0 6px;flex-wrap:wrap;}
+.hero-num{font-family:'Syne',sans-serif;font-size:clamp(64px,20vw,90px);font-weight:800;line-height:1;letter-spacing:-0.04em;background:linear-gradient(135deg,var(--p1),var(--t1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(167,139,250,0.4));animation:numPop 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes numPop{from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);}}
+.hero-reduction{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.reduction-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:var(--txt3);text-transform:uppercase;}
+.reduction-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--y1);line-height:1;}
+.reduction-path{font-family:'Space Mono',monospace;font-size:9px;color:var(--txt3);}
+.master-badge{display:inline-block;padding:2px 8px;background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.2));border:1px solid var(--y2);border-radius:20px;font-size:9px;font-weight:700;color:var(--y1);letter-spacing:0.1em;margin-top:2px;}
+.hero-word{font-family:'Space Mono',monospace;font-size:11px;color:var(--txt3);text-align:center;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hero-empty{text-align:center;padding:16px 0;}
+.hero-empty-icon{font-size:36px;opacity:0.25;display:block;margin-bottom:8px;}
+.hero-empty-txt{font-size:13px;color:var(--txt3);font-style:italic;}
+
+/* ── CIPHER GRID ── */
+.section{margin-bottom:14px;}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.section-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;color:var(--txt3);text-transform:uppercase;}
+.section-count{font-family:'Space Mono',monospace;font-size:9px;color:var(--txt3);}
+.cipher-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.cipher-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.cipher-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.2s;}
+.cipher-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.cipher-card:hover::before{opacity:1;}
+.cipher-card.sel{border-color:var(--p1);box-shadow:0 0 0 1px var(--p1),0 4px 20px rgba(124,58,237,0.2);}
+.cipher-card.sel::before{background:linear-gradient(135deg,rgba(167,139,250,0.08),rgba(45,212,191,0.05));}
+.cipher-card .cc-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.15em;color:var(--txt3);text-transform:uppercase;margin-bottom:4px;position:relative;z-index:1;}
+.cipher-card .cc-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1;position:relative;z-index:1;}
+.cipher-card .cc-desc{font-size:9px;color:var(--txt3);margin-top:3px;position:relative;z-index:1;line-height:1.3;}
+.cipher-card .cc-tag{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;opacity:0.8;}
+/* Color classes for value text */
+.c-p{color:var(--p1)!important;} .c-t{color:var(--t1)!important;} .c-y{color:var(--y1)!important;}
+.c-g{color:var(--g1)!important;} .c-r{color:var(--r1)!important;} .c-o{color:var(--o1)!important;}
+.c-pink{color:var(--pink)!important;} .c-w{color:var(--white)!important;}
+/* Dot colors */
+.dot-p{background:var(--p1);} .dot-t{background:var(--t1);} .dot-y{background:var(--y1);}
+.dot-g{background:var(--g1);} .dot-r{background:var(--r1);} .dot-o{background:var(--o1);}
+.dot-pink{background:var(--pink);}
+
+/* ── BREAKDOWN ── */
+.breakdown{margin-bottom:14px;}
+.break-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.chip{display:flex;flex-direction:column;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px;min-width:38px;animation:chipIn 0.18s ease both;}
+@keyframes chipIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.chip-l{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);line-height:1;}
+.chip-v{font-family:'Space Mono',monospace;font-size:8px;color:var(--p1);margin-top:3px;}
+.chip.space{background:transparent;border-color:transparent;width:10px;min-width:10px;}
+.word-sub{font-family:'Space Mono',monospace;font-size:9px;color:var(--t1);background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.2);border-radius:4px;padding:2px 6px;align-self:flex-end;margin-bottom:2px;}
+
+/* ── ALPHABET REF ── */
+.alpha-ref{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px 14px;margin-bottom:14px;}
+.alpha-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;color:var(--txt3);text-transform:uppercase;margin-bottom:10px;}
+.alpha-grid{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;}
+.alpha-cell{display:flex;flex-direction:column;align-items:center;padding:4px 2px;border-radius:5px;transition:background 0.15s;}
+.alpha-cell.used{background:rgba(167,139,250,0.12);}
+.alpha-letter{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--txt2);}
+.alpha-cell.used .alpha-letter{color:var(--p1);}
+.alpha-val{font-family:'Space Mono',monospace;font-size:7px;color:var(--txt3);}
+.alpha-cell.used .alpha-val{color:var(--p1);opacity:0.8;}
+
+/* ── HISTORY ── */
+.history-section{margin-bottom:14px;}
+.history-list{display:flex;flex-direction:column;gap:5px;}
+.hist-item{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 12px;cursor:pointer;transition:all 0.2s;}
+.hist-item:hover{border-color:var(--border2);background:var(--card2);}
+.hist-word{font-weight:700;font-size:13px;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%;}
+.hist-vals{display:flex;gap:8px;}
+.hist-val{font-family:'Space Mono',monospace;font-size:10px;color:var(--txt3);}
+.hist-del{background:none;border:none;color:var(--txt3);cursor:pointer;padding:2px;font-size:14px;line-height:1;transition:color 0.2s;}
+.hist-del:hover{color:var(--r1);}
+.hist-empty{font-size:12px;color:var(--txt3);text-align:center;padding:12px;font-style:italic;}
+
+/* ── NUMEROLOGY INSIGHT ── */
+.num-insight{background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(245,158,11,0.05));border:1.5px solid rgba(251,191,36,0.25);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
+.ni-hdr{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.ni-icon{font-size:14px;}
+.ni-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.25em;color:var(--y1);text-transform:uppercase;}
+.ni-text{font-size:12px;color:var(--txt2);line-height:1.6;}
+
+/* ── INFO PILLS ── */
+.info-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.info-pill{display:flex;align-items:center;gap:4px;padding:5px 10px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-family:'Space Mono',monospace;font-size:9px;color:var(--txt3);}
+.info-pill span:first-child{color:var(--p1);}
+
+/* ── COMPARE ── */
+.compare-section{background:var(--card);border:1.5px solid var(--border2);border-radius:14px;padding:14px;margin-bottom:14px;}
+.compare-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.25em;color:var(--txt3);text-transform:uppercase;margin-bottom:10px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.cmp-cell{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.cmp-label{font-family:'Space Mono',monospace;font-size:8px;color:var(--txt3);text-transform:uppercase;margin-bottom:4px;}
+.cmp-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t1);}
+.cmp-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white);outline:none;transition:border-color 0.2s;}
+.cmp-input:focus{border-color:var(--t1);}
+.cmp-input::placeholder{color:var(--txt3);}
+.cmp-match{text-align:center;padding:8px;border-radius:8px;font-family:'Space Mono',monospace;font-size:9px;margin-top:4px;letter-spacing:0.1em;}
+.cmp-match.yes{background:rgba(74,222,128,0.12);color:var(--g1);border:1px solid rgba(74,222,128,0.3);}
+.cmp-match.no{background:rgba(248,113,113,0.08);color:var(--r1);border:1px solid rgba(248,113,113,0.2);}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--g1);border-radius:10px;padding:9px 18px;font-family:'Space Mono',monospace;font-size:10px;color:var(--g1);letter-spacing:0.1em;opacity:0;transition:all 0.3s;z-index:100;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+
+/* ── RESONANCE ── */
+.resonance-section{margin-bottom:14px;}
+.resonance-sub{font-family:'Space Mono',monospace;font-size:8px;color:var(--txt3);letter-spacing:0.1em;margin-top:1px;}
+.resonance-cipher-badge{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.15em;padding:3px 8px;background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(45,212,191,0.1));border:1px solid var(--border2);border-radius:20px;color:var(--p1);text-transform:uppercase;white-space:nowrap;}
+.resonance-range-tabs{display:flex;gap:5px;margin:10px 0 10px;}
+.range-tab{flex:1;padding:7px 6px;border-radius:8px;border:1.5px solid var(--border);background:transparent;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--txt3);cursor:pointer;transition:all 0.2s;}
+.range-tab:hover{border-color:var(--border2);color:var(--txt);}
+.range-tab.active{background:rgba(167,139,250,0.12);border-color:var(--p1);color:var(--p1);}
+.resonance-empty{text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--txt3);padding:20px;font-style:italic;}
+.resonance-list{display:flex;flex-direction:column;gap:5px;}
+.res-group{margin-bottom:6px;}
+.res-group-val{font-family:'Syne',monospace;font-size:11px;font-weight:800;letter-spacing:0.1em;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.res-group-num{color:var(--p1);}
+.res-group-line{flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);}
+.res-group-delta{font-family:'Space Mono',monospace;font-size:8px;color:var(--txt3);}
+.res-items{display:flex;flex-wrap:wrap;gap:5px;}
+.res-item{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 10px;cursor:pointer;transition:all 0.2s;min-width:0;}
+.res-item:hover{border-color:var(--p1);background:rgba(167,139,250,0.06);}
+.res-item.exact-match{border-color:var(--t1);background:rgba(45,212,191,0.07);}
+.res-word{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--white);white-space:nowrap;}
+.res-cat{font-family:'Space Mono',monospace;font-size:7px;color:var(--txt3);margin-top:2px;text-transform:uppercase;letter-spacing:0.1em;}
+.res-val-badge{font-family:'Space Mono',monospace;font-size:8px;color:var(--t1);margin-top:1px;}
+
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  .orb,.star{animation:none!important;}
+  .hero-num{animation:none!important;}
+  .chip{animation:none!important;}
+  .audit-section{transition:none!important;}
+  *{transition-duration:0.01ms!important;animation-duration:0.01ms!important;}
+}
+
+
+/* ── FOCUS VISIBLE ── */
+.cipher-card:focus-visible,.range-tab:focus-visible,.tab-btn:focus-visible,
+.copy-btn:focus-visible,.icon-btn:focus-visible,.hist-item:focus-visible,
+.res-item:focus-visible,.run-btn:focus-visible{
+  outline:2px solid var(--p1);outline-offset:2px;
+}
+.input-box:focus-visible{outline:none;}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- Ambient bg -->
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+<div class="stars" id="stars"></div>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-icon">
+        <svg viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="url(#g1)" stroke-width="1.5" fill="none"/>
+          <polygon points="20,5 35,32 5,32" stroke="url(#g2)" stroke-width="1.2" fill="none" opacity="0.6"/>
+          <circle cx="20" cy="22" r="7" stroke="url(#g1)" stroke-width="1.2" fill="none"/>
+          <circle cx="20" cy="22" r="3" fill="url(#g1)" opacity="0.8"/>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#2dd4bf"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f472b6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="hdr-title">Gematria</div>
+    </div>
+    <div class="hdr-sub">Multi-Cipher Numerological Calculator</div>
+    <div class="hdr-badge">✦ 20 Cipher Systems ✦</div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-wrap">
+    <input class="input-box" id="mainIn" type="text" placeholder="Enter word, name, or phrase..." aria-label="Enter word or phrase to calculate gematria value" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="120">
+    <div class="input-actions">
+      <button class="icon-btn" id="clearBtn" title="Clear" aria-label="Clear input">✕</button>
+    </div>
+  </div>
+  <div class="char-count" id="charCount"></div>
+
+  <!-- Info pills -->
+  <div class="info-row hidden" id="infoPills">
+    <div class="info-pill"><span id="pillLetters">0</span><span>letters</span></div>
+    <div class="info-pill"><span id="pillWords">0</span><span>words</span></div>
+    <div class="info-pill"><span id="pillVowels">0</span><span>vowels</span></div>
+    <div class="info-pill"><span id="pillCons">0</span><span>consonants</span></div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn active t-all" data-tab="all">All Ciphers</button>
+    <button class="tab-btn t-core" data-tab="core">Core English</button>
+    <button class="tab-btn t-adv" data-tab="adv">Advanced</button>
+    <button class="tab-btn t-math" data-tab="math">Mathematical</button>
+    <button class="tab-btn t-kab" data-tab="kab">Kabbalah</button>
+  </div>
+
+  <!-- Hero result -->
+  <div class="hero" id="hero">
+    <div class="hero-empty" id="heroEmpty">
+      <span class="hero-empty-icon">◉</span>
+      <div class="hero-empty-txt">Type a word or phrase above to decode its hidden numbers</div>
+    </div>
+    <div id="heroResult" class="hidden">
+      <div class="hero-top">
+        <div class="hero-cipher">
+          <div class="hero-cipher-tag">Active Cipher</div>
+          <div class="hero-cipher-name" id="heroCipherName">—</div>
+        </div>
+        <div class="hero-actions">
+          <button class="copy-btn" id="copyMain" aria-label="Copy active cipher result">⎘ COPY</button>
+          <button class="copy-btn" id="copyAll" aria-label="Copy all cipher results">⎘ ALL</button>
+        </div>
+      </div>
+      <div class="hero-num-row">
+        <div class="hero-num" id="heroNum">0</div>
+        <div class="hero-reduction hidden" id="heroReduction">
+          <div class="reduction-label">Digital Root</div>
+          <div class="reduction-num" id="heroRoot">0</div>
+          <div class="reduction-path" id="heroPath"></div>
+          <div class="master-badge hidden" id="masterBadge"></div>
+        </div>
+      </div>
+      <div class="hero-word" id="heroWord"></div>
+    </div>
+  </div>
+
+  <!-- Numerology insight -->
+  <div class="num-insight hidden" id="numInsight">
+    <div class="ni-hdr"><span class="ni-icon">◈</span><span class="ni-title">Numerological Meaning</span></div>
+    <div class="ni-text" id="niText"></div>
+  </div>
+
+  <!-- Cipher Grid -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-title" id="gridTitle">All Ciphers</div>
+      <div class="section-count" id="gridCount"></div>
+    </div>
+    <div class="cipher-grid" id="cipherGrid"></div>
+  </div>
+
+  <!-- Letter Breakdown -->
+  <div class="breakdown hidden" id="breakSection">
+    <div class="section-hdr">
+      <div class="section-title">Letter Breakdown</div>
+      <div class="section-count" id="breakCipherName"></div>
+    </div>
+    <div class="break-chips" id="breakChips"></div>
+  </div>
+
+  <!-- Alphabet Reference -->
+  <div class="alpha-ref hidden" id="alphaRef">
+    <div class="alpha-title">Cipher Reference · <span id="alphaRefName">—</span></div>
+    <div class="alpha-grid" id="alphaGrid"></div>
+  </div>
+
+  <!-- Compare Tool -->
+  <div class="compare-section hidden" id="compareSection">
+    <div class="compare-title">✦ Compare Two Words</div>
+    <div class="compare-grid">
+      <div>
+        <input class="cmp-input" id="cmpA" type="text" placeholder="Word A..." aria-label="Compare word A" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="60">
+        <div class="cmp-cell" style="margin-top:6px;">
+          <div class="cmp-label" id="cmpALabel">—</div>
+          <div class="cmp-val" id="cmpAVal">—</div>
+        </div>
+      </div>
+      <div>
+        <input class="cmp-input" id="cmpB" type="text" placeholder="Word B..." aria-label="Compare word B" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="60">
+        <div class="cmp-cell" style="margin-top:6px;">
+          <div class="cmp-label" id="cmpBLabel">—</div>
+          <div class="cmp-val" id="cmpBVal">—</div>
+        </div>
+      </div>
+    </div>
+    <div id="cmpMatch" class="cmp-match hidden"></div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section hidden" id="histSection">
+    <div class="section-hdr">
+      <div class="section-title">Recent Searches</div>
+      <button class="icon-btn" id="clearHist" style="font-size:10px;font-family:'Space Mono',monospace;letter-spacing:0.1em;color:var(--r1);">CLEAR ALL</button>
+    </div>
+    <div class="history-list" id="histList"></div>
+  </div>
+
+  <!-- Resonance Matches -->
+  <div class="resonance-section hidden" id="resonanceSection">
+    <div class="section-hdr" style="flex-direction:column;align-items:flex-start;gap:3px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <div class="section-title">✦ Resonance Matches</div>
+        <div class="resonance-cipher-badge" id="resonanceCipherBadge"></div>
+      </div>
+      <div class="resonance-sub">685+ words across Paleo Hebrew, Yiddish, Latin, American &amp; English &middot; sorted ↓</div>
+    </div>
+    <div class="resonance-range-tabs" id="resonanceRangeTabs">
+      <button class="range-tab active" data-range="0" aria-label="Show exact matches only">Exact</button>
+      <button class="range-tab" data-range="5" aria-label="Show matches within 5">±5</button>
+      <button class="range-tab" data-range="10" aria-label="Show matches within 10">±10</button>
+      <button class="range-tab" data-range="25" aria-label="Show matches within 25">±25</button>
+    </div>
+    <div class="resonance-empty hidden" id="resonanceEmpty">No matches found in this range</div>
+    <div class="resonance-list" id="resonanceList"></div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STARS
+// ═══════════════════════════════════════════════
+(function(){
+  const s=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');
+    el.className='star';
+    el.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*0.4+0.1};--d:${(Math.random()*4+2).toFixed(1)}s;animation-delay:${(Math.random()*4).toFixed(1)}s;`;
+    s.appendChild(el);
+  }
+})();
+
+// ═══════════════════════════════════════════════
+// CIPHER DEFINITIONS — sourced from Gematrinator, Gematrix, Gematriacalculator.us, GematriaLens, GematriaLab
+// ═══════════════════════════════════════════════
+
+// First 26 primes
+const PRIMES=[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101];
+
+// Triangular numbers T(n) = n*(n+1)/2
+const TRIANGULAR=Array.from({length:26},(_,i)=>(i+1)*(i+2)/2);
+
+// Fibonacci sequence for 26 letters (starting 1,1,2,3,5...)
+const FIB=(()=>{let a=[1,1];for(let i=2;i<26;i++)a.push(a[i-1]+a[i-2]);return a;})();
+
+// Septenary: A-G=1-7, H-N=1-7, O-U=1-7, V=1,W=2,X=3,Y=4,Z=5
+const SEPT=[1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5];
+
+// Chaldean — ancient Babylonian, 9 is sacred/excluded
+const CHALD_MAP={A:1,I:1,J:1,Q:1,Y:1,B:2,K:2,R:2,C:3,G:3,L:3,S:3,D:4,M:4,T:4,E:5,H:5,N:5,X:5,U:6,V:6,W:6,O:7,Z:7,F:8,P:8};
+
+// Jewish / Latin (Gematrix standard)
+const JEWISH_MAP={A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:600,K:10,L:20,M:30,N:40,O:50,P:60,Q:70,R:80,S:90,T:100,U:200,V:700,W:900,X:300,Y:400,Z:500};
+
+// Hebrew (Mispar Gadol / Mathers table adapted to Latin)
+// Hebrew Mispar Gadol / Mathers table adapted to Latin alphabet
+const HEBREW_VALS=[1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,900];
+
+// ALW Kabbalah (Carol Smith 1974): A=1,L=2,W=3,B=4,M=5,X=6,C=7,N=8,Y=9,D=10,O=11,Z=12,E=13,P=14,F=15,Q=16,G=17,R=18,H=19,S=20,I=21,T=22,J=23,U=24,K=25,V=26
+const ALW_VALS=(()=>{const m={};'ALWBMXCNYDOZEPFQGRHSITJUKV'.split('').forEach((c,i)=>m[c]=i+1);return m;})();
+
+// Keypad cipher (phone pad)
+const KEYPAD_MAP={A:2,B:2,C:2,D:3,E:3,F:3,G:4,H:4,I:4,J:5,K:5,L:5,M:6,N:6,O:6,P:7,Q:7,R:7,S:7,T:8,U:8,V:8,W:9,X:9,Y:9,Z:9};
+
+function ordVal(c){return c.charCodeAt(0)-64;} // A=1..Z=26
+
+const CIPHERS={
+  // CORE ENGLISH
+  ordinal:{name:'English Ordinal',short:'Ordinal',group:'core',color:'c-p',dot:'dot-p',
+    desc:'A=1 to Z=26',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?ordVal(u):null;})},
+  reduction:{name:'Full Reduction',short:'Reduction',group:'core',color:'c-t',dot:'dot-t',
+    desc:'Digit root (A-I=1-9 repeating)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();if(!/[A-Z]/.test(u))return null;let v=ordVal(u);while(v>9)v=String(v).split('').reduce((a,b)=>a+parseInt(b),0);return v;})},
+  reverse:{name:'Reverse Ordinal',short:'Reverse',group:'core',color:'c-y',dot:'dot-y',
+    desc:'A=26 down to Z=1',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(27-ordVal(u)):null;})},
+  revReduction:{name:'Reverse Reduction',short:'Rev.Reduce',group:'core',color:'c-o',dot:'dot-o',
+    desc:'Reverse then reduce to digit',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();if(!/[A-Z]/.test(u))return null;let v=27-ordVal(u);while(v>9)v=String(v).split('').reduce((a,b)=>a+parseInt(b),0);return v;})},
+  sumerian:{name:'English Sumerian',short:'Sumerian',group:'core',color:'c-g',dot:'dot-g',
+    desc:'Ordinal × 6 (A=6, Z=156)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?ordVal(u)*6:null;})},
+  revSumerian:{name:'Reverse Sumerian',short:'Rev.Sumer',group:'core',color:'c-pink',dot:'dot-pink',
+    desc:'Reverse × 6 (A=156, Z=6)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(27-ordVal(u))*6:null;})},
+
+  // ADVANCED
+  hebrew:{name:'Hebrew Standard',short:'Hebrew',group:'adv',color:'c-p',dot:'dot-p',
+    desc:'Mispar Gadol / Mathers table',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?HEBREW_VALS[ordVal(u)-1]:null;})},
+  jewish:{name:'Jewish / Latin',short:'Jewish',group:'adv',color:'c-t',dot:'dot-t',
+    desc:'Gematrix standard Jewish values',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(JEWISH_MAP[u]||0):null;})},
+  chaldean:{name:'Chaldean',short:'Chaldean',group:'adv',color:'c-y',dot:'dot-y',
+    desc:'Ancient Babylonian (9 = sacred)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(CHALD_MAP[u]||0):null;})},
+  satanic:{name:'Satanic',short:'Satanic',group:'adv',color:'c-r',dot:'dot-r',
+    desc:'Begins at 36 (36th Triangular = 666)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?ordVal(u)+35:null;})},
+  revSatanic:{name:'Reverse Satanic',short:'Rev.Satan',group:'adv',color:'c-o',dot:'dot-o',
+    desc:'Satanic in reverse (Z=36+35=…)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(27-ordVal(u))+35:null;})},
+  francisBacon:{name:'Francis Bacon',short:'Fr.Bacon',group:'adv',color:'c-g',dot:'dot-g',
+    desc:'a-z=1-26, A-Z=27-52 (case sensitive)',
+    fn:(s)=>s.split('').map(c=>{
+      if(c>='a'&&c<='z')return c.charCodeAt(0)-96;
+      if(c>='A'&&c<='Z')return c.charCodeAt(0)-38;
+      return null;
+    })},
+  francBaconis:{name:'Franc Baconis',short:'Fr.Baconis',group:'adv',color:'c-pink',dot:'dot-pink',
+    desc:'Odd=uppercase, Even=lowercase (A=1,a=2,B=3,b=4…)',
+    fn:(s)=>s.split('').map(c=>{
+      if(c>='A'&&c<='Z')return (c.charCodeAt(0)-65)*2+1;
+      if(c>='a'&&c<='z')return (c.charCodeAt(0)-97)*2+2;
+      return null;
+    })},
+
+  // MATHEMATICAL
+  primes:{name:'Primes',short:'Primes',group:'math',color:'c-y',dot:'dot-y',
+    desc:'A=2, B=3, C=5… (1st 26 primes)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?PRIMES[ordVal(u)-1]:null;})},
+  trigonal:{name:'Trigonal',short:'Trigonal',group:'math',color:'c-t',dot:'dot-t',
+    desc:'Triangular numbers T(n)=n(n+1)/2',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?TRIANGULAR[ordVal(u)-1]:null;})},
+  squares:{name:'Squares',short:'Squares',group:'math',color:'c-o',dot:'dot-o',
+    desc:'A=1², B=2², C=3²… Z=676',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();if(!/[A-Z]/.test(u))return null;const n=ordVal(u);return n*n;})},
+  fibonacci:{name:'Fibonacci',short:'Fibonacci',group:'math',color:'c-g',dot:'dot-g',
+    desc:'Fibonacci sequence applied to alphabet',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?FIB[ordVal(u)-1]:null;})},
+  septenary:{name:'Septenary',short:'Septenary',group:'math',color:'c-p',dot:'dot-p',
+    desc:'Base-7 cycle (Marty Leeds / divine 7)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?SEPT[ordVal(u)-1]:null;})},
+
+  // KABBALAH
+  alw:{name:'ALW Kabbalah',short:'ALW Kab.',group:'kab',color:'c-r',dot:'dot-r',
+    desc:'Carol Smith 1974 English Qaballa',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(ALW_VALS[u]||0):null;})},
+  keypad:{name:'Keypad',short:'Keypad',group:'kab',color:'c-pink',dot:'dot-pink',
+    desc:'Telephone pad mapping (ABC=2…)',
+    fn:(s)=>s.split('').map(c=>{const u=c.toUpperCase();return(/[A-Z]/.test(u))?(KEYPAD_MAP[u]||0):null;})},
+};
+
+// For "all" tab ordering
+const CIPHER_KEYS=Object.keys(CIPHERS);
+const GROUP_KEYS={all:CIPHER_KEYS,core:CIPHER_KEYS.filter(k=>CIPHERS[k].group==='core'),adv:CIPHER_KEYS.filter(k=>CIPHERS[k].group==='adv'),math:CIPHER_KEYS.filter(k=>CIPHERS[k].group==='math'),kab:CIPHER_KEYS.filter(k=>CIPHERS[k].group==='kab')};
+const GROUP_TITLES={all:'All Ciphers',core:'Core English',adv:'Advanced',math:'Mathematical',kab:'Kabbalah'};
+
+function sumVals(arr){return arr.reduce((a,v)=>a+(v===null?0:v),0);}
+function escapeHTML(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function getLetters(s){return s.toUpperCase().replace(/[^A-Z]/g,'');}
+function digitalRoot(n){
+  const steps=[];
+  let v=n;
+  while(v>9&&v!==11&&v!==22&&v!==33){
+    const prev=v;
+    v=String(v).split('').reduce((a,b)=>a+parseInt(b),0);
+    steps.push(prev);
+  }
+  return{final:v,steps};
+}
+
+const MASTER_MEANINGS={11:'Master Illuminator — bridging the physical and spiritual',22:'Master Builder — manifesting vision into form',33:'Master Teacher — compassion and wisdom embodied'};
+
+const NUM_MEANINGS={
+  1:'Leadership, independence, new beginnings — the primal creative force.',
+  2:'Duality, partnership, intuition — the feminine principle of receptivity.',
+  3:'Creativity, expression, joy — the trinity of mind, body, spirit.',
+  4:'Stability, structure, earth — foundation of all manifest reality.',
+  5:'Freedom, change, adventure — the agent of transformation.',
+  6:'Harmony, nurturing, love — beauty and responsibility intertwined.',
+  7:'Wisdom, mysticism, solitude — the seeker of hidden truth.',
+  8:'Power, abundance, karma — the cycle of cause and effect.',
+  9:'Completion, universal love, humanitarianism — the final single digit.'
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let activeTab='all';
+let activeCipher='ordinal';
+let searchHistory=[];
+try{searchHistory=JSON.parse(localStorage.getItem('gem_hist')||'[]');}catch(e){}
+let currentInput='';
+
+// ═══════════════════════════════════════════════
+// ELEMENTS
+// ═══════════════════════════════════════════════
+const mainIn=document.getElementById('mainIn');
+const clearBtn=document.getElementById('clearBtn');
+const charCount=document.getElementById('charCount');
+const infoPills=document.getElementById('infoPills');
+const hero=document.getElementById('hero');
+const heroEmpty=document.getElementById('heroEmpty');
+const heroResult=document.getElementById('heroResult');
+const heroCipherName=document.getElementById('heroCipherName');
+const heroNum=document.getElementById('heroNum');
+const heroReduction=document.getElementById('heroReduction');
+const heroRoot=document.getElementById('heroRoot');
+const heroPath=document.getElementById('heroPath');
+const masterBadge=document.getElementById('masterBadge');
+const heroWord=document.getElementById('heroWord');
+const numInsight=document.getElementById('numInsight');
+const niText=document.getElementById('niText');
+const cipherGrid=document.getElementById('cipherGrid');
+const gridTitle=document.getElementById('gridTitle');
+const gridCount=document.getElementById('gridCount');
+const breakSection=document.getElementById('breakSection');
+const breakChips=document.getElementById('breakChips');
+const breakCipherName=document.getElementById('breakCipherName');
+const alphaRef=document.getElementById('alphaRef');
+const alphaRefName=document.getElementById('alphaRefName');
+const alphaGrid=document.getElementById('alphaGrid');
+const compareSection=document.getElementById('compareSection');
+const cmpA=document.getElementById('cmpA');
+const cmpB=document.getElementById('cmpB');
+const cmpAVal=document.getElementById('cmpAVal');
+const cmpBVal=document.getElementById('cmpBVal');
+const cmpALabel=document.getElementById('cmpALabel');
+const cmpBLabel=document.getElementById('cmpBLabel');
+const cmpMatch=document.getElementById('cmpMatch');
+const histSection=document.getElementById('histSection');
+const histList=document.getElementById('histList');
+const copyMain=document.getElementById('copyMain');
+const copyAll=document.getElementById('copyAll');
+const clearHist=document.getElementById('clearHist');
+const toast=document.getElementById('toast');
+const pillLetters=document.getElementById('pillLetters');
+const pillWords=document.getElementById('pillWords');
+const pillVowels=document.getElementById('pillVowels');
+const pillCons=document.getElementById('pillCons');
+
+// ═══════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════
+mainIn.addEventListener('input',()=>{currentInput=mainIn.value;update();});
+clearBtn.addEventListener('click',()=>{mainIn.value='';currentInput='';update();mainIn.focus();});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab=btn.dataset.tab;
+    updateGrid();
+  });
+});
+
+copyMain.addEventListener('click',()=>{
+  const cipher=CIPHERS[activeCipher];
+  const vals=cipher.fn(currentInput);
+  const total=sumVals(vals);
+  copyText(`${mainIn.value} — ${cipher.name}: ${total}`);
+});
+
+copyAll.addEventListener('click',()=>{
+  const lines=CIPHER_KEYS.map(k=>{
+    const c=CIPHERS[k];
+    const v=sumVals(c.fn(currentInput));
+    return `${c.name}: ${v}`;
+  });
+  copyText(`"${mainIn.value}"\n${lines.join('\n')}`);
+});
+
+clearHist.addEventListener('click',()=>{searchHistory=[];saveHist();renderHist();});
+
+cmpA.addEventListener('input',updateCompare);
+cmpB.addEventListener('input',updateCompare);
+
+// ═══════════════════════════════════════════════
+// CORE UPDATE
+// ═══════════════════════════════════════════════
+function update(){
+  const raw=currentInput;
+  const clean=getLetters(raw);
+  
+  // Char count
+  if(raw.length>0){charCount.textContent=`${raw.length} chars · ${clean.length} letters`;}
+  else{charCount.textContent='';}
+
+  if(!clean){
+    hero.classList.remove('active');
+    heroEmpty.classList.remove('hidden');
+    heroResult.classList.add('hidden');
+    infoPills.classList.add('hidden');
+    numInsight.classList.add('hidden');
+    breakSection.classList.add('hidden');
+    alphaRef.classList.add('hidden');
+    compareSection.classList.add('hidden');
+    resonanceSection.classList.add('hidden');
+    histSection.classList.remove('hidden');
+    renderHist();
+    updateGrid();
+    return;
+  }
+
+  // Info pills
+  infoPills.classList.remove('hidden');
+  const words=raw.trim().split(/\s+/).filter(w=>/[a-zA-Z]/.test(w));
+  const vowels=clean.replace(/[^AEIOU]/g,'').length;
+  pillLetters.textContent=clean.length;
+  pillWords.textContent=words.length;
+  pillVowels.textContent=vowels;
+  pillCons.textContent=clean.length-vowels;
+
+  // Hero
+  const cipher=CIPHERS[activeCipher];
+  const vals=cipher.fn(raw);
+  const total=sumVals(vals);
+  hero.classList.add('active');
+  heroEmpty.classList.add('hidden');
+  heroResult.classList.remove('hidden');
+  heroCipherName.textContent=cipher.name;
+  heroNum.textContent=total;
+  heroNum.style.animation='none';
+  requestAnimationFrame(()=>heroNum.style.animation='');
+  heroWord.textContent=raw.length>50?raw.substring(0,50)+'…':raw;
+
+  // Reduction
+  const{final,steps}=digitalRoot(total);
+  if(total!==final||MASTER_MEANINGS[total]){
+    heroReduction.classList.remove('hidden');
+    heroRoot.textContent=final;
+    heroPath.textContent=steps.length?steps.join(' → ')+' → '+final:'';
+    if(MASTER_MEANINGS[final]){
+      masterBadge.textContent='✦ MASTER '+final;
+      masterBadge.classList.remove('hidden');
+    } else {
+      masterBadge.classList.add('hidden');
+    }
+    const meaning=MASTER_MEANINGS[final]||NUM_MEANINGS[final];
+    if(meaning){niText.textContent=`Number ${final}: ${meaning}`;numInsight.classList.remove('hidden');}
+    else{numInsight.classList.add('hidden');}
+  } else {
+    heroReduction.classList.add('hidden');
+    masterBadge.classList.add('hidden');
+    const meaning=MASTER_MEANINGS[total]||NUM_MEANINGS[total];
+    if(meaning){niText.textContent=`Number ${total}: ${meaning}`;numInsight.classList.remove('hidden');}
+    else{numInsight.classList.add('hidden');}
+  }
+
+  // Breakdown
+  renderBreakdown(raw,cipher,vals);
+
+  // Alphabet reference
+  renderAlphaRef(cipher,clean);
+
+  // Grid
+  updateGrid();
+
+  // Compare
+  compareSection.classList.remove('hidden');
+  updateCompare();
+
+  // History
+  addToHistory(raw,total,cipher.name);
+  histSection.classList.remove('hidden');
+  renderHist();
+
+  // Resonance
+  renderResonance();
+}
+
+// ═══════════════════════════════════════════════
+// GRID
+// ═══════════════════════════════════════════════
+function updateGrid(){
+  const keys=GROUP_KEYS[activeTab];
+  const raw=currentInput;
+  const clean=getLetters(raw);
+  gridTitle.textContent=GROUP_TITLES[activeTab];
+  gridCount.textContent=`${keys.length} ciphers`;
+  cipherGrid.innerHTML='';
+  keys.forEach(k=>{
+    const c=CIPHERS[k];
+    const vals=c.fn(raw);
+    const total=sumVals(vals);
+    const card=document.createElement('div');
+    card.className='cipher-card'+(k===activeCipher?' sel':'');card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label',`${c.name} cipher`);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activeCipher=k;update();}});
+    card.innerHTML=`
+      <div class="cc-tag ${c.dot}"></div>
+      <div class="cc-label">${c.short}</div>
+      <div class="cc-val ${c.color}">${clean?total:'—'}</div>
+      <div class="cc-desc">${c.desc}</div>
+    `;
+    card.addEventListener('click',()=>{
+      activeCipher=k;
+      update();
+    });
+    cipherGrid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// BREAKDOWN
+// ═══════════════════════════════════════════════
+function renderBreakdown(raw,cipher,vals){
+  if(!getLetters(raw)||getLetters(raw).length>50){breakSection.classList.add('hidden');return;}
+  breakSection.classList.remove('hidden');
+  breakCipherName.textContent=cipher.short;
+  breakChips.innerHTML='';
+  const chars=raw.split('');
+  let delay=0;
+  let wordSum=0;
+  let inWord=false;
+
+  const flushWord=()=>{
+    if(inWord){
+      const sub=document.createElement('div');
+      sub.className='word-sub chip';
+      sub.style.animationDelay=`${delay*30}ms`;
+      sub.textContent=`=${wordSum}`;
+      breakChips.appendChild(sub);
+      wordSum=0;
+      inWord=false;
+      delay++;
+    }
+  };
+
+  chars.forEach((c,i)=>{
+    const v=vals[i];
+    if(c===' '||c==='\t'){
+      flushWord();
+      const sp=document.createElement('div');
+      sp.className='chip space';
+      breakChips.appendChild(sp);
+    } else if(/[a-zA-Z]/.test(c)&&v!==null){
+      inWord=true;
+      wordSum+=v;
+      const chip=document.createElement('div');
+      chip.className='chip';
+      chip.style.animationDelay=`${delay*25}ms`;
+      chip.innerHTML=`<span class="chip-l">${c.toUpperCase()}</span><span class="chip-v">${v}</span>`;
+      breakChips.appendChild(chip);
+      delay++;
+    }
+  });
+  flushWord();
+}
+
+// ═══════════════════════════════════════════════
+// ALPHABET REF
+// ═══════════════════════════════════════════════
+function renderAlphaRef(cipher,usedLetters){
+  alphaRef.classList.remove('hidden');
+  alphaRefName.textContent=cipher.name;
+  alphaGrid.innerHTML='';
+  const used=new Set(usedLetters.split(''));
+  const alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  alpha.forEach(letter=>{
+    const vals=cipher.fn(letter);
+    const v=vals[0];
+    const cell=document.createElement('div');
+    cell.className='alpha-cell'+(used.has(letter)?' used':'');
+    cell.innerHTML=`<span class="alpha-letter">${letter}</span><span class="alpha-val">${v===null?'—':v}</span>`;
+    alphaGrid.appendChild(cell);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// COMPARE
+// ═══════════════════════════════════════════════
+function updateCompare(){
+  const a=cmpA.value.trim();
+  const b=cmpB.value.trim();
+  const cipher=CIPHERS[activeCipher];
+  const va=a?sumVals(cipher.fn(a)):null;
+  const vb=b?sumVals(cipher.fn(b)):null;
+  cmpALabel.textContent=cipher.short;
+  cmpBLabel.textContent=cipher.short;
+  cmpAVal.textContent=va!==null?va:'—';
+  cmpBVal.textContent=vb!==null?vb:'—';
+  if(va!==null&&vb!==null){
+    cmpMatch.classList.remove('hidden');
+    if(va===vb){cmpMatch.className='cmp-match yes';cmpMatch.textContent='✦ MATCH — same numerical essence';}
+    else{cmpMatch.className='cmp-match no';cmpMatch.textContent=`Δ Difference: ${Math.abs(va-vb)}`;}
+  } else {cmpMatch.classList.add('hidden');}
+}
+
+// ═══════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════
+function addToHistory(word,val,cipherName){
+  if(!word.trim())return;
+  searchHistory=searchHistory.filter(h=>h.word.toLowerCase()!==word.toLowerCase());
+  searchHistory.unshift({word,val,cipherName,ts:Date.now()});
+  if(searchHistory.length>15)searchHistory=searchHistory.slice(0,15);
+  saveHist();
+}
+function saveHist(){try{localStorage.setItem('gem_hist',JSON.stringify(searchHistory));}catch(e){}}
+function renderHist(){
+  if(!searchHistory.length){histSection.classList.add('hidden');return;}
+  histSection.classList.remove('hidden');
+  histList.innerHTML='';
+  searchHistory.forEach((h,i)=>{
+    const item=document.createElement('div');
+    item.className='hist-item';item.setAttribute('tabindex','0');item.setAttribute('role','button');item.setAttribute('aria-label','Load '+h.word+' into calculator');item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.target.classList.contains('hist-del')){mainIn.value=h.word;currentInput=h.word;update();}}});
+    const hw=item.querySelector? item : item; // typed access below
+    const wDiv=document.createElement('div');wDiv.className='hist-word';wDiv.textContent=h.word;
+    const vDiv=document.createElement('div');vDiv.className='hist-vals';
+    const s1=document.createElement('span');s1.className='hist-val';s1.textContent=h.cipherName;
+    const s2=document.createElement('span');s2.className='hist-val';s2.style.cssText='color:var(--p1);font-weight:700;';s2.textContent=h.val;
+    vDiv.appendChild(s1);vDiv.appendChild(s2);
+    const dBtn=document.createElement('button');dBtn.className='hist-del';dBtn.dataset.i=i;dBtn.textContent='✕';dBtn.setAttribute('aria-label','Remove '+h.word+' from history');
+    item.appendChild(wDiv);item.appendChild(vDiv);item.appendChild(dBtn);
+    item.addEventListener('click',(e)=>{
+      if(e.target.classList.contains('hist-del')){
+        searchHistory.splice(parseInt(e.target.dataset.i),1);
+        saveHist();renderHist();return;
+      }
+      mainIn.value=h.word;currentInput=h.word;update();
+    });
+    histList.appendChild(item);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// COPY / TOAST
+// ═══════════════════════════════════════════════
+function copyText(txt){
+  navigator.clipboard?.writeText(txt).then(()=>showToast('Copied to clipboard!')).catch(()=>showToast('Copy failed'));
+}
+let toastTimer;
+function showToast(msg){
+  toast.textContent=msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+
+// ═══════════════════════════════════════════════
+// RESONANCE DATABASE — curated common words & phrases
+// Values are pre-computed via English Ordinal (A=1..Z=26)
+// ═══════════════════════════════════════════════
+const WORD_DB = [
+  // ── NATURE
+  {w:'sun',cat:'nature'},{w:'moon',cat:'nature'},{w:'star',cat:'nature'},{w:'fire',cat:'nature'},
+  {w:'water',cat:'nature'},{w:'earth',cat:'nature'},{w:'wind',cat:'nature'},{w:'rain',cat:'nature'},
+  {w:'snow',cat:'nature'},{w:'ice',cat:'nature'},{w:'storm',cat:'nature'},{w:'ocean',cat:'nature'},
+  {w:'river',cat:'nature'},{w:'mountain',cat:'nature'},{w:'forest',cat:'nature'},{w:'flower',cat:'nature'},
+  {w:'tree',cat:'nature'},{w:'seed',cat:'nature'},{w:'root',cat:'nature'},{w:'light',cat:'nature'},
+  {w:'shadow',cat:'nature'},{w:'dark',cat:'nature'},{w:'dawn',cat:'nature'},{w:'dusk',cat:'nature'},
+  {w:'sky',cat:'nature'},{w:'cloud',cat:'nature'},{w:'thunder',cat:'nature'},{w:'lightning',cat:'nature'},
+  {w:'fog',cat:'nature'},{w:'mist',cat:'nature'},{w:'desert',cat:'nature'},{w:'cave',cat:'nature'},
+  {w:'stone',cat:'nature'},{w:'crystal',cat:'nature'},{w:'gold',cat:'nature'},{w:'silver',cat:'nature'},
+  {w:'iron',cat:'nature'},{w:'copper',cat:'nature'},{w:'salt',cat:'nature'},{w:'ash',cat:'nature'},
+  {w:'breath',cat:'nature'},{w:'void',cat:'nature'},{w:'abyss',cat:'nature'},{w:'flame',cat:'nature'},
+
+  // ── SACRED / SPIRITUAL
+  {w:'god',cat:'sacred'},{w:'lord',cat:'sacred'},{w:'holy',cat:'sacred'},{w:'soul',cat:'sacred'},
+  {w:'spirit',cat:'sacred'},{w:'angel',cat:'sacred'},{w:'devil',cat:'sacred'},{w:'satan',cat:'sacred'},
+  {w:'heaven',cat:'sacred'},{w:'hell',cat:'sacred'},{w:'prayer',cat:'sacred'},{w:'faith',cat:'sacred'},
+  {w:'truth',cat:'sacred'},{w:'love',cat:'sacred'},{w:'grace',cat:'sacred'},{w:'mercy',cat:'sacred'},
+  {w:'sin',cat:'sacred'},{w:'evil',cat:'sacred'},{w:'good',cat:'sacred'},{w:'temple',cat:'sacred'},
+  {w:'altar',cat:'sacred'},{w:'cross',cat:'sacred'},{w:'crown',cat:'sacred'},{w:'blood',cat:'sacred'},
+  {w:'lamb',cat:'sacred'},{w:'serpent',cat:'sacred'},{w:'dragon',cat:'sacred'},{w:'lucifer',cat:'sacred'},
+  {w:'christ',cat:'sacred'},{w:'jesus',cat:'sacred'},{w:'allah',cat:'sacred'},{w:'karma',cat:'sacred'},
+  {w:'dharma',cat:'sacred'},{w:'chakra',cat:'sacred'},{w:'mantra',cat:'sacred'},{w:'omega',cat:'sacred'},
+  {w:'alpha',cat:'sacred'},{w:'amen',cat:'sacred'},{w:'shalom',cat:'sacred'},{w:'kabbalah',cat:'sacred'},
+  {w:'torah',cat:'sacred'},{w:'bible',cat:'sacred'},{w:'quran',cat:'sacred'},{w:'mystic',cat:'sacred'},
+  {w:'occult',cat:'sacred'},{w:'esoteric',cat:'sacred'},{w:'ritual',cat:'sacred'},{w:'magic',cat:'sacred'},
+  {w:'spell',cat:'sacred'},{w:'curse',cat:'sacred'},{w:'seal',cat:'sacred'},{w:'covenant',cat:'sacred'},
+  {w:'rapture',cat:'sacred'},{w:'messiah',cat:'sacred'},{w:'prophet',cat:'sacred'},{w:'exodus',cat:'sacred'},
+
+  // ── PALEO HEBREW (transliterated letter names and root words)
+  {w:'aleph',cat:'paleo-hebrew'},{w:'beth',cat:'paleo-hebrew'},{w:'gimel',cat:'paleo-hebrew'},
+  {w:'dalet',cat:'paleo-hebrew'},{w:'hey',cat:'paleo-hebrew'},{w:'vav',cat:'paleo-hebrew'},
+  {w:'zayin',cat:'paleo-hebrew'},{w:'chet',cat:'paleo-hebrew'},{w:'tet',cat:'paleo-hebrew'},
+  {w:'yod',cat:'paleo-hebrew'},{w:'kaph',cat:'paleo-hebrew'},{w:'lamed',cat:'paleo-hebrew'},
+  {w:'mem',cat:'paleo-hebrew'},{w:'nun',cat:'paleo-hebrew'},{w:'samek',cat:'paleo-hebrew'},
+  {w:'ayin',cat:'paleo-hebrew'},{w:'peh',cat:'paleo-hebrew'},{w:'tzadi',cat:'paleo-hebrew'},
+  {w:'qoph',cat:'paleo-hebrew'},{w:'resh',cat:'paleo-hebrew'},{w:'shin',cat:'paleo-hebrew'},
+  {w:'tav',cat:'paleo-hebrew'},{w:'aleph tav',cat:'paleo-hebrew'},{w:'bereshit',cat:'paleo-hebrew'},
+  {w:'elohim',cat:'paleo-hebrew'},{w:'yahweh',cat:'paleo-hebrew'},{w:'adonai',cat:'paleo-hebrew'},
+  {w:'shaddai',cat:'paleo-hebrew'},{w:'ruach',cat:'paleo-hebrew'},{w:'nephesh',cat:'paleo-hebrew'},
+  {w:'neshamah',cat:'paleo-hebrew'},{w:'emet',cat:'paleo-hebrew'},{w:'chai',cat:'paleo-hebrew'},
+  {w:'shalom',cat:'paleo-hebrew'},{w:'kodesh',cat:'paleo-hebrew'},{w:'chayah',cat:'paleo-hebrew'},
+  {w:'tzaddik',cat:'paleo-hebrew'},{w:'malakh',cat:'paleo-hebrew'},{w:'nachash',cat:'paleo-hebrew'},
+  {w:'seraphim',cat:'paleo-hebrew'},{w:'cherubim',cat:'paleo-hebrew'},{w:'nephilim',cat:'paleo-hebrew'},
+  {w:'shekinah',cat:'paleo-hebrew'},{w:'tetragrammaton',cat:'paleo-hebrew'},{w:'metatron',cat:'paleo-hebrew'},
+  {w:'samael',cat:'paleo-hebrew'},{w:'azazel',cat:'paleo-hebrew'},{w:'abaddon',cat:'paleo-hebrew'},
+  {w:'gehenna',cat:'paleo-hebrew'},{w:'eden',cat:'paleo-hebrew'},{w:'zion',cat:'paleo-hebrew'},
+  {w:'sinai',cat:'paleo-hebrew'},{w:'canaan',cat:'paleo-hebrew'},{w:'babel',cat:'paleo-hebrew'},
+  {w:'golem',cat:'paleo-hebrew'},{w:'dybbuk',cat:'paleo-hebrew'},{w:'sephirot',cat:'paleo-hebrew'},
+  {w:'malkuth',cat:'paleo-hebrew'},{w:'yesod',cat:'paleo-hebrew'},{w:'hod',cat:'paleo-hebrew'},
+  {w:'netzach',cat:'paleo-hebrew'},{w:'tiphareth',cat:'paleo-hebrew'},{w:'gevurah',cat:'paleo-hebrew'},
+  {w:'chesed',cat:'paleo-hebrew'},{w:'binah',cat:'paleo-hebrew'},{w:'chokmah',cat:'paleo-hebrew'},
+  {w:'kether',cat:'paleo-hebrew'},{w:'daath',cat:'paleo-hebrew'},{w:'ain soph',cat:'paleo-hebrew'},
+  {w:'ain soph aur',cat:'paleo-hebrew'},{w:'qliphoth',cat:'paleo-hebrew'},{w:'klipot',cat:'paleo-hebrew'},
+  {w:'zohar',cat:'paleo-hebrew'},{w:'sefer yetzirah',cat:'paleo-hebrew'},{w:'talmud',cat:'paleo-hebrew'},
+  {w:'midrash',cat:'paleo-hebrew'},{w:'mishnah',cat:'paleo-hebrew'},{w:'tzimtzum',cat:'paleo-hebrew'},
+  {w:'tikkun',cat:'paleo-hebrew'},{w:'devekut',cat:'paleo-hebrew'},{w:'gilgul',cat:'paleo-hebrew'},
+
+  // ── YIDDISH (common terms used in gematria comparison)
+  {w:'mazal',cat:'yiddish'},{w:'mazel tov',cat:'yiddish'},{w:'chutzpah',cat:'yiddish'},
+  {w:'neshama',cat:'yiddish'},{w:'schlep',cat:'yiddish'},{w:'kvetch',cat:'yiddish'},
+  {w:'mishpocheh',cat:'yiddish'},{w:'mensch',cat:'yiddish'},{w:'schmuck',cat:'yiddish'},
+  {w:'kvell',cat:'yiddish'},{w:'bashert',cat:'yiddish'},{w:'beshert',cat:'yiddish'},
+  {w:'bitul',cat:'yiddish'},{w:'mitzvah',cat:'yiddish'},{w:'minyan',cat:'yiddish'},
+  {w:'shabbat',cat:'yiddish'},{w:'shabbos',cat:'yiddish'},{w:'yom kippur',cat:'yiddish'},
+  {w:'rosh hashanah',cat:'yiddish'},{w:'passover',cat:'yiddish'},{w:'chanukah',cat:'yiddish'},
+  {w:'purim',cat:'yiddish'},{w:'sukkot',cat:'yiddish'},{w:'shavuot',cat:'yiddish'},
+  {w:'schmooze',cat:'yiddish'},{w:'maven',cat:'yiddish'},{w:'nudge',cat:'yiddish'},
+  {w:'schlemazel',cat:'yiddish'},{w:'schlemiel',cat:'yiddish'},{w:'meshuggeneh',cat:'yiddish'},
+  {w:'oy vey',cat:'yiddish'},{w:'bubbie',cat:'yiddish'},{w:'zayde',cat:'yiddish'},
+  {w:'putz',cat:'yiddish'},{w:'noodge',cat:'yiddish'},{w:'glitch',cat:'yiddish'},
+  {w:'kibitz',cat:'yiddish'},{w:'lox',cat:'yiddish'},{w:'bris',cat:'yiddish'},
+  {w:'shadkhn',cat:'yiddish'},{w:'rebuke',cat:'yiddish'},{w:'klezmer',cat:'yiddish'},
+
+  // ── LATIN (sacred, occult, and Agrippan tradition)
+  {w:'lux',cat:'latin'},{w:'veritas',cat:'latin'},{w:'vita',cat:'latin'},{w:'mors',cat:'latin'},
+  {w:'deus',cat:'latin'},{w:'rex',cat:'latin'},{w:'pax',cat:'latin'},{w:'fides',cat:'latin'},
+  {w:'spes',cat:'latin'},{w:'caritas',cat:'latin'},{w:'gloria',cat:'latin'},{w:'anima',cat:'latin'},
+  {w:'spiritus',cat:'latin'},{w:'corpus',cat:'latin'},{w:'mens',cat:'latin'},{w:'ratio',cat:'latin'},
+  {w:'natura',cat:'latin'},{w:'aqua',cat:'latin'},{w:'ignis',cat:'latin'},{w:'terra',cat:'latin'},
+  {w:'aer',cat:'latin'},{w:'caelum',cat:'latin'},{w:'sol',cat:'latin'},{w:'luna',cat:'latin'},
+  {w:'stella',cat:'latin'},{w:'nox',cat:'latin'},{w:'dies',cat:'latin'},{w:'tempus',cat:'latin'},
+  {w:'amor',cat:'latin'},{w:'odium',cat:'latin'},{w:'timor',cat:'latin'},{w:'ira',cat:'latin'},
+  {w:'sapientia',cat:'latin'},{w:'scientia',cat:'latin'},{w:'potentia',cat:'latin'},{w:'fortuna',cat:'latin'},
+  {w:'virtus',cat:'latin'},{w:'malum',cat:'latin'},{w:'bonum',cat:'latin'},{w:'verum',cat:'latin'},
+  {w:'caput',cat:'latin'},{w:'manus',cat:'latin'},{w:'oculus',cat:'latin'},{w:'cor',cat:'latin'},
+  {w:'sanguis',cat:'latin'},{w:'nomen',cat:'latin'},{w:'verbum',cat:'latin'},{w:'via',cat:'latin'},
+  {w:'porta',cat:'latin'},{w:'scala',cat:'latin'},{w:'clavis',cat:'latin'},{w:'signum',cat:'latin'},
+  {w:'mysterium',cat:'latin'},{w:'arcanum',cat:'latin'},{w:'secretum',cat:'latin'},{w:'opus',cat:'latin'},
+  {w:'magnum opus',cat:'latin'},{w:'prima materia',cat:'latin'},{w:'lapis philosophorum',cat:'latin'},
+  {w:'solve et coagula',cat:'latin'},{w:'as above so below',cat:'latin'},{w:'ex nihilo',cat:'latin'},
+  {w:'fiat lux',cat:'latin'},{w:'in principio',cat:'latin'},{w:'per aspera',cat:'latin'},
+  {w:'vinculum',cat:'latin'},{w:'spiritus mundi',cat:'latin'},{w:'anima mundi',cat:'latin'},
+  {w:'deus ex machina',cat:'latin'},{w:'memento mori',cat:'latin'},{w:'carpe diem',cat:'latin'},
+  {w:'vox dei',cat:'latin'},{w:'vox populi',cat:'latin'},{w:'tabula rasa',cat:'latin'},
+  {w:'terra incognita',cat:'latin'},{w:'homo sapiens',cat:'latin'},{w:'homo deus',cat:'latin'},
+  {w:'lucifer',cat:'latin'},{w:'satan',cat:'latin'},{w:'diabolus',cat:'latin'},{w:'daemon',cat:'latin'},
+  {w:'angelus',cat:'latin'},{w:'deus inversus',cat:'latin'},{w:'matrix',cat:'latin'},
+  {w:'numero',cat:'latin'},{w:'numerus',cat:'latin'},{w:'lapis',cat:'latin'},{w:'caduceus',cat:'latin'},
+
+  // ── AMERICAN ENGLISH (Gematrinator / Gematrix style — news, pop culture, institutions)
+  {w:'america',cat:'american'},{w:'united states',cat:'american'},{w:'washington',cat:'american'},
+  {w:'president',cat:'american'},{w:'congress',cat:'american'},{w:'senate',cat:'american'},
+  {w:'constitution',cat:'american'},{w:'declaration',cat:'american'},{w:'independence',cat:'american'},
+  {w:'federal reserve',cat:'american'},{w:'dollar',cat:'american'},{w:'pyramid',cat:'american'},
+  {w:'mason',cat:'american'},{w:'freemason',cat:'american'},{w:'skull and bones',cat:'american'},
+  {w:'thirty three',cat:'american'},{w:'illuminati',cat:'american'},{w:'new world order',cat:'american'},
+  {w:'deep state',cat:'american'},{w:'false flag',cat:'american'},{w:'agenda',cat:'american'},
+  {w:'hollywood',cat:'american'},{w:'television',cat:'american'},{w:'media',cat:'american'},
+  {w:'vaccine',cat:'american'},{w:'pandemic',cat:'american'},{w:'lockdown',cat:'american'},
+  {w:'pentagon',cat:'american'},{w:'cia',cat:'american'},{w:'nsa',cat:'american'},
+  {w:'nine eleven',cat:'american'},{w:'twin towers',cat:'american'},{w:'ground zero',cat:'american'},
+  {w:'stock market',cat:'american'},{w:'wall street',cat:'american'},{w:'central bank',cat:'american'},
+  {w:'mark of the beast',cat:'american'},{w:'rfid chip',cat:'american'},{w:'microchip',cat:'american'},
+  {w:'artificial intelligence',cat:'american'},{w:'transhumanism',cat:'american'},{w:'singularity',cat:'american'},
+  {w:'climate change',cat:'american'},{w:'global warming',cat:'american'},{w:'agenda twenty one',cat:'american'},
+  {w:'super bowl',cat:'american'},{w:'world series',cat:'american'},{w:'olympics',cat:'american'},
+  {w:'covid nineteen',cat:'american'},{w:'operation warp speed',cat:'american'},
+  {w:'great reset',cat:'american'},{w:'build back better',cat:'american'},
+  {w:'problem reaction solution',cat:'american'},{w:'hegelian dialectic',cat:'american'},
+
+  // ── NUMBERS / MATH
+  {w:'one',cat:'number'},{w:'two',cat:'number'},{w:'three',cat:'number'},{w:'four',cat:'number'},
+  {w:'five',cat:'number'},{w:'six',cat:'number'},{w:'seven',cat:'number'},{w:'eight',cat:'number'},
+  {w:'nine',cat:'number'},{w:'ten',cat:'number'},{w:'eleven',cat:'number'},{w:'twelve',cat:'number'},
+  {w:'thirteen',cat:'number'},{w:'zero',cat:'number'},{w:'hundred',cat:'number'},{w:'thousand',cat:'number'},
+  {w:'million',cat:'number'},{w:'infinity',cat:'number'},{w:'pi',cat:'number'},{w:'phi',cat:'number'},
+  {w:'six sixty six',cat:'number'},{w:'three thirty three',cat:'number'},{w:'one eleven',cat:'number'},
+  {w:'one forty four',cat:'number'},{w:'five five five',cat:'number'},{w:'seven seventy seven',cat:'number'},
+
+  // ── HUMAN / BODY
+  {w:'mind',cat:'human'},{w:'body',cat:'human'},{w:'heart',cat:'human'},{w:'brain',cat:'human'},
+  {w:'hand',cat:'human'},{w:'eye',cat:'human'},{w:'ear',cat:'human'},{w:'mouth',cat:'human'},
+  {w:'face',cat:'human'},{w:'head',cat:'human'},{w:'foot',cat:'human'},{w:'bone',cat:'human'},
+  {w:'skin',cat:'human'},{w:'birth',cat:'human'},{w:'death',cat:'human'},{w:'life',cat:'human'},
+  {w:'man',cat:'human'},{w:'woman',cat:'human'},{w:'child',cat:'human'},{w:'king',cat:'human'},
+  {w:'queen',cat:'human'},{w:'slave',cat:'human'},{w:'master',cat:'human'},{w:'father',cat:'human'},
+  {w:'mother',cat:'human'},{w:'brother',cat:'human'},{w:'sister',cat:'human'},{w:'dna',cat:'human'},
+  {w:'carbon',cat:'human'},{w:'consciousness',cat:'human'},{w:'subconscious',cat:'human'},
+
+  // ── EMOTIONS / VIRTUES / VICES
+  {w:'fear',cat:'emotion'},{w:'hate',cat:'emotion'},{w:'hope',cat:'emotion'},{w:'joy',cat:'emotion'},
+  {w:'pain',cat:'emotion'},{w:'rage',cat:'emotion'},{w:'calm',cat:'emotion'},{w:'peace',cat:'emotion'},
+  {w:'war',cat:'emotion'},{w:'chaos',cat:'emotion'},{w:'order',cat:'emotion'},{w:'power',cat:'emotion'},
+  {w:'wisdom',cat:'emotion'},{w:'courage',cat:'emotion'},{w:'honor',cat:'emotion'},{w:'shame',cat:'emotion'},
+  {w:'pride',cat:'emotion'},{w:'envy',cat:'emotion'},{w:'greed',cat:'emotion'},{w:'lust',cat:'emotion'},
+  {w:'wrath',cat:'emotion'},{w:'sloth',cat:'emotion'},{w:'gluttony',cat:'emotion'},{w:'vanity',cat:'emotion'},
+
+  // ── TIME / COSMOS
+  {w:'time',cat:'cosmos'},{w:'space',cat:'cosmos'},{w:'cosmos',cat:'cosmos'},{w:'universe',cat:'cosmos'},
+  {w:'galaxy',cat:'cosmos'},{w:'planet',cat:'cosmos'},{w:'saturn',cat:'cosmos'},{w:'jupiter',cat:'cosmos'},
+  {w:'mars',cat:'cosmos'},{w:'venus',cat:'cosmos'},{w:'mercury',cat:'cosmos'},{w:'neptune',cat:'cosmos'},
+  {w:'pluto',cat:'cosmos'},{w:'orion',cat:'cosmos'},{w:'sirius',cat:'cosmos'},{w:'solar',cat:'cosmos'},
+  {w:'lunar',cat:'cosmos'},{w:'eclipse',cat:'cosmos'},{w:'solstice',cat:'cosmos'},{w:'equinox',cat:'cosmos'},
+  {w:'zodiac',cat:'cosmos'},{w:'aries',cat:'cosmos'},{w:'taurus',cat:'cosmos'},{w:'gemini',cat:'cosmos'},
+  {w:'cancer',cat:'cosmos'},{w:'leo',cat:'cosmos'},{w:'virgo',cat:'cosmos'},{w:'libra',cat:'cosmos'},
+  {w:'scorpio',cat:'cosmos'},{w:'sagittarius',cat:'cosmos'},{w:'capricorn',cat:'cosmos'},
+  {w:'aquarius',cat:'cosmos'},{w:'pisces',cat:'cosmos'},{w:'black hole',cat:'cosmos'},
+  {w:'dark matter',cat:'cosmos'},{w:'dark energy',cat:'cosmos'},{w:'event horizon',cat:'cosmos'},
+  {w:'pleiades',cat:'cosmos'},{w:'arcturus',cat:'cosmos'},{w:'polaris',cat:'cosmos'},
+
+  // ── ESOTERIC / SYMBOLS
+  {w:'pyramid',cat:'symbol'},{w:'triangle',cat:'symbol'},{w:'circle',cat:'symbol'},
+  {w:'square',cat:'symbol'},{w:'spiral',cat:'symbol'},{w:'ankh',cat:'symbol'},
+  {w:'pentagram',cat:'symbol'},{w:'hexagram',cat:'symbol'},{w:'sigil',cat:'symbol'},{w:'rune',cat:'symbol'},
+  {w:'tarot',cat:'symbol'},{w:'wand',cat:'symbol'},{w:'sword',cat:'symbol'},{w:'chalice',cat:'symbol'},
+  {w:'pentacle',cat:'symbol'},{w:'ouroboros',cat:'symbol'},{w:'vesica',cat:'symbol'},
+  {w:'rose',cat:'symbol'},{w:'dove',cat:'symbol'},{w:'phoenix',cat:'symbol'},
+  {w:'lion',cat:'symbol'},{w:'eagle',cat:'symbol'},{w:'wolf',cat:'symbol'},{w:'bull',cat:'symbol'},
+  {w:'fleur de lis',cat:'symbol'},{w:'all seeing eye',cat:'symbol'},{w:'eye of horus',cat:'symbol'},
+  {w:'star of david',cat:'symbol'},{w:'seal of solomon',cat:'symbol'},{w:'swastika',cat:'symbol'},
+  {w:'yin yang',cat:'symbol'},{w:'om',cat:'symbol'},{w:'triskelion',cat:'symbol'},
+  {w:'veve',cat:'symbol'},{w:'sigil of lucifer',cat:'symbol'},{w:'leviathan cross',cat:'symbol'},
+
+  // ── BIBLICAL NAMES / HISTORICAL
+  {w:'adam',cat:'biblical'},{w:'eve',cat:'biblical'},{w:'noah',cat:'biblical'},{w:'moses',cat:'biblical'},
+  {w:'david',cat:'biblical'},{w:'solomon',cat:'biblical'},{w:'elijah',cat:'biblical'},{w:'daniel',cat:'biblical'},
+  {w:'mary',cat:'biblical'},{w:'michael',cat:'biblical'},{w:'gabriel',cat:'biblical'},{w:'raphael',cat:'biblical'},
+  {w:'uriel',cat:'biblical'},{w:'isaiah',cat:'biblical'},{w:'ezekiel',cat:'biblical'},{w:'jeremiah',cat:'biblical'},
+  {w:'abraham',cat:'biblical'},{w:'isaac',cat:'biblical'},{w:'jacob',cat:'biblical'},{w:'joseph',cat:'biblical'},
+  {w:'enoch',cat:'biblical'},{w:'melchizedek',cat:'biblical'},{w:'nimrod',cat:'biblical'},{w:'cain',cat:'biblical'},
+  {w:'abel',cat:'biblical'},{w:'lilith',cat:'biblical'},{w:'delilah',cat:'biblical'},{w:'samson',cat:'biblical'},
+  {w:'goliath',cat:'biblical'},{w:'pharaoh',cat:'biblical'},{w:'herod',cat:'biblical'},{w:'pilate',cat:'biblical'},
+
+  // ── ANCIENT DEITIES / MYTHOLOGY
+  {w:'plato',cat:'mythology'},{w:'socrates',cat:'mythology'},{w:'pythagoras',cat:'mythology'},
+  {w:'hermes',cat:'mythology'},{w:'osiris',cat:'mythology'},{w:'isis',cat:'mythology'},
+  {w:'horus',cat:'mythology'},{w:'thoth',cat:'mythology'},{w:'ra',cat:'mythology'},{w:'set',cat:'mythology'},
+  {w:'anubis',cat:'mythology'},{w:'atum',cat:'mythology'},{w:'ptah',cat:'mythology'},{w:'nut',cat:'mythology'},
+  {w:'zeus',cat:'mythology'},{w:'apollo',cat:'mythology'},{w:'athena',cat:'mythology'},{w:'ares',cat:'mythology'},
+  {w:'poseidon',cat:'mythology'},{w:'hades',cat:'mythology'},{w:'prometheus',cat:'mythology'},
+  {w:'dionysus',cat:'mythology'},{w:'heracles',cat:'mythology'},{w:'persephone',cat:'mythology'},
+  {w:'odin',cat:'mythology'},{w:'thor',cat:'mythology'},{w:'loki',cat:'mythology'},{w:'freya',cat:'mythology'},
+  {w:'marduk',cat:'mythology'},{w:'enlil',cat:'mythology'},{w:'enki',cat:'mythology'},{w:'inanna',cat:'mythology'},
+  {w:'moloch',cat:'mythology'},{w:'baal',cat:'mythology'},{w:'ashtoreth',cat:'mythology'},{w:'dagon',cat:'mythology'},
+  {w:'nero',cat:'mythology'},{w:'caesar',cat:'mythology'},{w:'alexander',cat:'mythology'},{w:'cleopatra',cat:'mythology'},
+  {w:'nimrod',cat:'mythology'},{w:'semiramis',cat:'mythology'},{w:'tammuz',cat:'mythology'},
+
+  // ── PHRASES (cross-site comparison staples)
+  {w:'as above so below',cat:'phrase'},{w:'know thyself',cat:'phrase'},
+  {w:'in the beginning',cat:'phrase'},{w:'the word',cat:'phrase'},
+  {w:'let there be light',cat:'phrase'},{w:'the number of the beast',cat:'phrase'},
+  {w:'all seeing eye',cat:'phrase'},{w:'the golden ratio',cat:'phrase'},
+  {w:'tree of life',cat:'phrase'},{w:'the great work',cat:'phrase'},
+  {w:'forbidden knowledge',cat:'phrase'},{w:'sacred geometry',cat:'phrase'},
+  {w:'order out of chaos',cat:'phrase'},{w:'new world order',cat:'phrase'},
+  {w:'the holy grail',cat:'phrase'},{w:'eye of god',cat:'phrase'},
+  {w:'master builder',cat:'phrase'},{w:'hidden hand',cat:'phrase'},
+  {w:'black sun',cat:'phrase'},{w:'philosopher stone',cat:'phrase'},
+  {w:'mark of the beast',cat:'phrase'},{w:'book of the dead',cat:'phrase'},
+  {w:'emerald tablet',cat:'phrase'},{w:'halls of amenti',cat:'phrase'},
+  {w:'the lost word',cat:'phrase'},{w:'royal arch',cat:'phrase'},
+  {w:'in god we trust',cat:'phrase'},{w:'one nation under god',cat:'phrase'},
+  {w:'e pluribus unum',cat:'phrase'},{w:'novus ordo seclorum',cat:'phrase'},
+  {w:'annuit coeptis',cat:'phrase'},{w:'ordo ab chao',cat:'phrase'},
+  {w:'do what thou wilt',cat:'phrase'},{w:'love is the law',cat:'phrase'},
+  {w:'every man and woman is a star',cat:'phrase'},{w:'the law of thelema',cat:'phrase'},
+  {w:'so mote it be',cat:'phrase'},{w:'as i will so mote it be',cat:'phrase'},
+  {w:'three six nine',cat:'phrase'},{w:'the tesla code',cat:'phrase'},
+  {w:'the veil is thin',cat:'phrase'},{w:'the matrix is real',cat:'phrase'},
+  {w:'simulation theory',cat:'phrase'},{w:'we are the ones',cat:'phrase'},
+
+  // ── CONCEPTS
+  {w:'freedom',cat:'concept'},{w:'justice',cat:'concept'},{w:'balance',cat:'concept'},
+  {w:'harmony',cat:'concept'},{w:'creation',cat:'concept'},{w:'destruction',cat:'concept'},
+  {w:'awareness',cat:'concept'},{w:'awakening',cat:'concept'},
+  {w:'enlightenment',cat:'concept'},{w:'ascension',cat:'concept'},{w:'vibration',cat:'concept'},
+  {w:'frequency',cat:'concept'},{w:'resonance',cat:'concept'},{w:'synchronicity',cat:'concept'},
+  {w:'manifestation',cat:'concept'},{w:'intention',cat:'concept'},{w:'meditation',cat:'concept'},
+  {w:'initiation',cat:'concept'},{w:'transmutation',cat:'concept'},{w:'alchemy',cat:'concept'},
+  {w:'gnosis',cat:'concept'},{w:'logos',cat:'concept'},{w:'aether',cat:'concept'},
+  {w:'duality',cat:'concept'},{w:'trinity',cat:'concept'},{w:'unity',cat:'concept'},
+  {w:'matrix',cat:'concept'},{w:'simulation',cat:'concept'},{w:'illusion',cat:'concept'},
+  {w:'reality',cat:'concept'},{w:'perception',cat:'concept'},{w:'deception',cat:'concept'},
+  {w:'third eye',cat:'concept'},{w:'pineal gland',cat:'concept'},{w:'kundalini',cat:'concept'},
+  {w:'astral plane',cat:'concept'},{w:'akashic record',cat:'concept'},{w:'morphic field',cat:'concept'},
+  {w:'collective unconscious',cat:'concept'},{w:'archetype',cat:'concept'},{w:'shadow self',cat:'concept'},
+  {w:'ego death',cat:'concept'},{w:'divine masculine',cat:'concept'},{w:'divine feminine',cat:'concept'},
+];
+
+// Pre-compute ordinal values for all DB entries using active cipher
+function computeDBValues(cipherKey){
+  const cipher = CIPHERS[cipherKey];
+  return WORD_DB.map(entry => ({
+    ...entry,
+    val: sumVals(cipher.fn(entry.w))
+  })).sort((a,b) => b.val - a.val);
+}
+
+// ── Resonance state
+let resonanceRange = 0; // exact by default
+const resonanceSection = document.getElementById('resonanceSection');
+const resonanceList    = document.getElementById('resonanceList');
+const resonanceEmpty   = document.getElementById('resonanceEmpty');
+const resonanceCipherBadge = document.getElementById('resonanceCipherBadge');
+
+document.getElementById('resonanceRangeTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.range-tab');
+  if(!btn) return;
+  document.querySelectorAll('.range-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  resonanceRange = parseInt(btn.dataset.range);
+  renderResonance();
+});
+
+function renderResonance(){
+  if(!currentInput || !getLetters(currentInput)){
+    resonanceSection.classList.add('hidden');
+    return;
+  }
+  resonanceSection.classList.remove('hidden');
+
+  const cipher = CIPHERS[activeCipher];
+  const targetVal = sumVals(cipher.fn(currentInput));
+
+  resonanceCipherBadge.textContent = cipher.short;
+
+  // Filter and sort descending by value
+  const dbVals = computeDBValues(activeCipher);
+  const matches = dbVals.filter(entry => {
+    // Exclude exact match of the input itself
+    if(entry.w.toLowerCase() === currentInput.trim().toLowerCase()) return false;
+    return Math.abs(entry.val - targetVal) <= resonanceRange;
+  }).sort((a,b) => b.val - a.val);
+
+  resonanceList.innerHTML = '';
+
+  if(!matches.length){
+    resonanceEmpty.classList.remove('hidden');
+    return;
+  }
+  resonanceEmpty.classList.add('hidden');
+
+  // Group by value
+  const groups = {};
+  matches.forEach(m => {
+    if(!groups[m.val]) groups[m.val] = [];
+    groups[m.val].push(m);
+  });
+
+  // Render groups descending
+  Object.keys(groups)
+    .map(Number)
+    .sort((a,b) => b - a)
+    .forEach(val => {
+      const delta = val - targetVal;
+      const isExact = delta === 0;
+      const group = document.createElement('div');
+      group.className = 'res-group';
+
+      const deltaStr = delta === 0 ? 'exact match' : (delta > 0 ? '+'+delta : ''+delta);
+      group.innerHTML = `
+        <div class="res-group-val">
+          <span class="res-group-num">${val}</span>
+          <span class="res-group-line"></span>
+          <span class="res-group-delta">${deltaStr}</span>
+        </div>
+        <div class="res-items" id="rg-${val}"></div>
+      `;
+      resonanceList.appendChild(group);
+
+      const itemsEl = group.querySelector('.res-items');
+      groups[val].forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'res-item' + (isExact ? ' exact-match' : '');
+        item.setAttribute('role','button');
+        item.setAttribute('tabindex','0');
+        item.setAttribute('aria-label',`Load ${entry.w} into calculator`);
+        const rw=document.createElement('span');rw.className='res-word';rw.textContent=entry.w;
+        const rc=document.createElement('span');rc.className='res-cat';rc.textContent=entry.cat;
+        item.appendChild(rw);item.appendChild(rc);
+        item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();mainIn.value=entry.w;currentInput=entry.w;update();mainIn.scrollIntoView({behavior:'smooth',block:'start'});}});
+        item.addEventListener('click', () => {
+          mainIn.value = entry.w;
+          currentInput = entry.w;
+          update();
+          mainIn.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+        itemsEl.appendChild(item);
+      });
+    });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+renderHist();
+updateGrid();
+
+// ── SERVICE WORKER REGISTRATION
+// Skip registration in sandboxed preview environments (Claude artifacts, CodePen, etc.)
+// SW only works when served from your actual deployment domain
+const isSandbox = ['claudeusercontent.com','codepen.io','codesandbox.io','localhost'].some(d => location.hostname.includes(d));
+
+if ('serviceWorker' in navigator && !isSandbox) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => {
+        console.log('[App] SW registered, scope:', reg.scope);
+
+        // Poll for updates every 60s — catches updates when app stays open a long time
+        setInterval(() => reg.update(), 60000);
+
+        // Listen for a new SW installing
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return; // null guard — installing can be null in some browsers
+
+          newWorker.addEventListener('statechange', () => {
+            // Only show toast if page is already controlled (skip first-install noise)
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showToast('Update ready — tap to reload');
+              toast.style.cursor = 'pointer';
+              toast.onclick = () => {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                toast.onclick = null;
+                toast.style.cursor = '';
+              };
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[App] SW registration failed:', err));
+
+    // When a newly activated SW takes control, reload to get fresh cached assets
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+  });
+
+  // Offline / online status toasts
+  window.addEventListener('online',  () => showToast('Back online ✓'));
+  window.addEventListener('offline', () => showToast('Offline — app still works'));
+}
+</script>
+</body>
+</html>
